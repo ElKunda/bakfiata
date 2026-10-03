@@ -49,11 +49,6 @@
                         <span class="text-xs text-slate-400">Tables</span>
                     </div>
                 </div>
-                <!-- Bouton Ajouter une table -->
-                <button onclick="openAddTableModal()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl text-sm transition border border-slate-600 shadow-lg">
-                    <i data-lucide="plus-square" class="w-4 h-4"></i>
-                    <span>Ajouter une table</span>
-                </button>
                 <!-- Bouton Ajouter un invité -->
                 <button onclick="openAddGuestModal()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">
                     <i data-lucide="user-plus" class="w-4 h-4"></i>
@@ -278,60 +273,28 @@
             </div>
             <form onsubmit="handleAddNewGuest(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Genre / Catégorie</label>
-                    <select id="new-genre" onchange="toggleCoupleFields()" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Civilité</label>
+                    <select id="new-civilite" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
                         <option value="Monsieur">Monsieur</option>
                         <option value="Madame">Madame</option>
-                        <option value="Couple">Couple</option>
+                        <option value="Monsieur / Madame">Monsieur / Madame</option>
                     </select>
                 </div>
                 
                 <div>
-                    <label id="label-nom-1" class="block text-xs font-semibold text-slate-300 mb-1">Nom complet *</label>
-                    <input type="text" id="new-nom-1" required placeholder="Ex: Jean Dupont" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
-                </div>
-                
-                <div id="container-nom-2" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nom complet du conjoint(e) *</label>
-                    <input type="text" id="new-nom-2" placeholder="Ex: Marie Dupont" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nom complet *</label>
+                    <input type="text" id="new-nom" required placeholder="Ex: Jean Dupont" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Table attribuée</label>
                     <select id="new-table" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
-                        <option value="Table générale">Table générale</option>
+                        <option value="">-- Aucune table --</option>
                     </select>
                 </div>
 
                 <button type="submit" id="submit-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition">
                     Enregistrer l'invité
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODALE D'AJOUT D'UNE TABLE -->
-    <div id="add-table-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
-            <button onclick="closeAddTableModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/60 transition">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
-                <div class="p-2.5 bg-pink-500/20 text-pink-400 rounded-xl border border-pink-500/30">
-                    <i data-lucide="plus-square" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold text-white">Ajouter une nouvelle table</h3>
-                    <p class="text-xs text-slate-400">Création d'une table vide</p>
-                </div>
-            </div>
-            <form onsubmit="handleAddNewTable(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nom de la table *</label>
-                    <input type="text" id="new-table-name" required placeholder="Ex: Table VIP" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
-                </div>
-                <button type="submit" id="submit-table-btn" class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-xl transition">
-                    Créer la table
                 </button>
             </form>
         </div>
@@ -354,13 +317,21 @@
             </div>
             <form onsubmit="handleEditGuest(event)" class="space-y-4">
                 <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Civilité</label>
+                    <select id="edit-civilite" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="Monsieur">Monsieur</option>
+                        <option value="Madame">Madame</option>
+                        <option value="Monsieur / Madame">Monsieur / Madame</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Nom complet *</label>
                     <input type="text" id="edit-nom" required class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Table attribuée</label>
                     <select id="edit-table" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
-                        <option value="Table générale">Table générale</option>
+                        <option value="">-- Aucune table --</option>
                     </select>
                 </div>
                 <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition">
@@ -371,22 +342,22 @@
     </div>
 
     <script>
-        // Nouvelles clés Supabase configurées
         const SUPABASE_URL = 'https://hjqwcaqksgpdrdqntcmc.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_zbwRsxGISUJMb-MFrKg5lg_onu_AK0V';
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let allGuests = [];
+        let allTables = [];
         let currentViewMode = 'grid';
 
-        function getGuestType(genre) {
-            const clean = genre ? genre.trim().toLowerCase() : '';
-            if (clean.includes('couple')) {
-                return { label: 'Couple', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', icon: 'users' };
-            } else if (clean.includes('madame') || clean.includes('mme')) {
-                return { label: 'Madame', color: 'bg-pink-500/10 text-pink-400 border-pink-500/20', icon: 'user-check' };
+        function getCiviliteBadge(civilite) {
+            const clean = civilite ? civilite.trim().toLowerCase() : '';
+            if (clean.includes('madame') && clean.includes('monsieur')) {
+                return { label: 'Couple', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' };
+            } else if (clean.includes('madame')) {
+                return { label: 'Madame', color: 'bg-pink-500/10 text-pink-400 border-pink-500/20' };
             } else {
-                return { label: 'Monsieur', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', icon: 'user' };
+                return { label: 'Monsieur', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' };
             }
         }
 
@@ -400,16 +371,23 @@
             }
         }
 
-        async function fetchGuests() {
+        async function fetchAppData() {
             try {
-                const { data, error } = await supabaseClient
+                // Récupérer les tables depuis la table `table_list`
+                const tablesRes = await supabaseClient.from('table_list').select('*');
+                if (tablesRes.error) throw tablesRes.error;
+                allTables = tablesRes.data || [];
+
+                // Récupérer les invités avec leur table liée (grâce à la jointure Supabase)
+                const guestsRes = await supabaseClient
                     .from('guest')
-                    .select('*')
-                    .order('table_attribuee', { ascending: true });
-                if (error) throw error;
-                allGuests = data || [];
-                updateStats(allGuests);
-                updateTablesDropdown(allGuests);
+                    .select('*, table_list(id, name)'); // Adapter selon le nom de la colonne de nom de table dans table_list (ex: name ou nom)
+                if (guestsRes.error) throw guestsRes.error;
+                
+                allGuests = guestsRes.data || [];
+                
+                updateStats(allGuests, allTables);
+                updateTablesDropdowns();
                 applyFilterAndRender();
                 renderDrinksTab();
                 renderMusicTab();
@@ -424,10 +402,9 @@
             }
         }
 
-        function updateStats(guests) {
+        function updateStats(guests, tables) {
             document.getElementById('total-count').textContent = guests.length;
-            const uniqueTables = new Set(guests.map(g => g.table_attribuee || 'Table générale')).size;
-            document.getElementById('tables-count').textContent = uniqueTables;
+            document.getElementById('tables-count').textContent = tables.length;
             let confirmed = 0, declined = 0, pending = 0;
             guests.forEach(g => {
                 if (g.present === true) confirmed++;
@@ -439,13 +416,12 @@
             document.getElementById('stat-pending').textContent = pending;
         }
 
-        function updateTablesDropdown(guests) {
+        function updateTablesDropdowns() {
             const tableSelect = document.getElementById('new-table');
             const editTableSelect = document.getElementById('edit-table');
-            const uniqueTables = Array.from(new Set(guests.map(g => g.table_attribuee || 'Table générale'))).sort();
             
-            const optionsHtml = uniqueTables.map(tableName => `
-                <option value="${tableName}">${tableName}</option>
+            const optionsHtml = '<option value="">-- Aucune table --</option>' + allTables.map(t => `
+                <option value="${t.id}">${t.name || t.nom || 'Table ' + t.id}</option>
             `).join('');
 
             if(tableSelect) tableSelect.innerHTML = optionsHtml;
@@ -483,10 +459,11 @@
 
         function applyFilterAndRender() {
             const query = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allGuests.filter(g => 
-                (g.nom_complet && g.nom_complet.toLowerCase().includes(query)) || 
-                (g.table_attribuee && g.table_attribuee.toLowerCase().includes(query))
-            );
+            const filtered = allGuests.filter(g => {
+                const tableName = g.table_list ? (g.table_list.name || g.table_list.nom || '') : '';
+                return (g.nom_complet && g.nom_complet.toLowerCase().includes(query)) || 
+                       tableName.toLowerCase().includes(query);
+            });
             if (currentViewMode === 'grid') {
                 renderGridView(filtered);
             } else {
@@ -502,8 +479,8 @@
                 return;
             }
             grid.innerHTML = guests.map(guest => {
-                const type = getGuestType(guest.genre);
                 const presence = getPresenceBadge(guest.present);
+                const tableName = guest.table_list ? (guest.table_list.name || guest.table_list.nom || 'Table assignée') : 'Non assigné';
                 return `
                     <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl transition duration-200 hover:border-indigo-500/50 flex flex-col justify-between space-y-4">
                         <div class="flex items-start justify-between gap-2">
@@ -517,7 +494,7 @@
                                 </div>
                                 <p class="text-xs text-slate-400 flex items-center gap-1">
                                     <i data-lucide="utensils" class="w-3.5 h-3.5 text-slate-500"></i>
-                                    ${guest.table_attribuee || 'Table générale'}
+                                    ${tableName}
                                 </p>
                             </div>
                             <div class="flex items-center gap-1.5 flex-wrap justify-end">
@@ -546,7 +523,7 @@
                 return;
             }
             const grouped = guests.reduce((acc, guest) => {
-                const tableName = guest.table_attribuee || 'Table générale';
+                const tableName = guest.table_list ? (guest.table_list.name || guest.table_list.nom || 'Sans table') : 'Sans table';
                 if (!acc[tableName]) acc[tableName] = [];
                 acc[tableName].push(guest);
                 return acc;
@@ -641,12 +618,15 @@
             document.getElementById('drink-modal-count').textContent = `${guests.length} invité(s) ont choisi cette boisson`;
             
             const list = document.getElementById('drink-modal-guests');
-            list.innerHTML = guests.map(g => `
-                <li class="p-2.5 bg-slate-800/60 rounded-xl border border-slate-700/50 text-sm text-slate-200 flex justify-between items-center">
-                    <span class="font-medium">${g.nom_complet}</span>
-                    <span class="text-xs text-slate-400">${g.table_attribuee || 'Table générale'}</span>
-                </li>
-            `).join('');
+            list.innerHTML = guests.map(g => {
+                const tableName = g.table_list ? (g.table_list.name || g.table_list.nom || 'Sans table') : 'Sans table';
+                return `
+                    <li class="p-2.5 bg-slate-800/60 rounded-xl border border-slate-700/50 text-sm text-slate-200 flex justify-between items-center">
+                        <span class="font-medium">${g.nom_complet}</span>
+                        <span class="text-xs text-slate-400">${tableName}</span>
+                    </li>
+                `;
+            }).join('');
             document.getElementById('drink-modal').classList.remove('hidden');
         }
 
@@ -658,6 +638,7 @@
             const container = document.getElementById('songs-list');
             const songsMap = {};
             allGuests.forEach(guest => {
+                // Utilisation des nouveaux champs chanson_1, chanson_2, chanson_3
                 const songFields = [guest.chanson_1, guest.chanson_2, guest.chanson_3];
                 songFields.forEach(songStr => {
                     if (songStr && songStr.trim() !== '') {
@@ -709,12 +690,13 @@
             }
             container.innerHTML = messages.map(guest => {
                 const msg = guest.message;
+                const tableName = guest.table_list ? (guest.table_list.name || guest.table_list.nom || 'Sans table') : 'Sans table';
                 return `
                     <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl flex flex-col justify-between space-y-3">
                         <div class="space-y-2">
                             <div class="flex justify-between items-center pb-2 border-b border-slate-700/50">
                                 <h4 class="font-bold text-slate-200">${guest.nom_complet}</h4>
-                                <span class="text-xs text-slate-400">${guest.table_attribuee || 'Table générale'}</span>
+                                <span class="text-xs text-slate-400">${tableName}</span>
                             </div>
                             <p id="msg-text-${guest.id}" class="text-sm text-slate-300 italic leading-relaxed line-clamp-3">
                                 "${msg}"
@@ -747,12 +729,13 @@
             const guest = allGuests.find(g => String(g.id) === String(guestId));
             if (!guest) return;
             const presence = getPresenceBadge(guest.present);
+            const tableName = guest.table_list ? (guest.table_list.name || guest.table_list.nom || 'Non assigné') : 'Non assigné';
             
             const badgeEl = document.getElementById('modal-status-badge');
             badgeEl.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${presence.color}`;
             badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${presence.dot}"></span> ${presence.label}`;
             document.getElementById('modal-guest-name').textContent = guest.nom_complet || 'Invité';
-            document.getElementById('modal-table-name').innerHTML = `<i data-lucide="utensils" class="w-4 h-4 text-slate-500"></i> ${guest.table_attribuee || 'Table générale'}`;
+            document.getElementById('modal-table-name').innerHTML = `<i data-lucide="utensils" class="w-4 h-4 text-slate-500"></i> ${tableName}`;
             
             const inviteLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodeURIComponent(guest.nom_complet)}`;
             document.getElementById('modal-invite-link').value = inviteLink;
@@ -805,63 +788,33 @@
             document.getElementById('add-guest-modal').classList.add('hidden');
         }
 
-        function toggleCoupleFields() {
-            const genre = document.getElementById('new-genre').value;
-            const containerNom2 = document.getElementById('container-nom-2');
-            const labelNom1 = document.getElementById('label-nom-1');
-            const inputNom2 = document.getElementById('new-nom-2');
-            if (genre === 'Couple') {
-                containerNom2.classList.remove('hidden');
-                inputNom2.required = true;
-                labelNom1.textContent = 'Nom complet (Personne 1) *';
-            } else {
-                containerNom2.classList.add('hidden');
-                inputNom2.required = false;
-                inputNom2.value = '';
-                labelNom1.textContent = 'Nom complet *';
-            }
-        }
-
         async function handleAddNewGuest(event) {
             event.preventDefault();
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.textContent = "Enregistrement...";
             
-            const genre = document.getElementById('new-genre').value;
-            const nom1 = document.getElementById('new-nom-1').value.trim();
-            const nom2 = document.getElementById('new-nom-2').value.trim();
-            const table_attribuee = document.getElementById('new-table').value;
-            
-            let recordsToInsert = [];
+            const civilite = document.getElementById('new-civilite').value;
+            const nom = document.getElementById('new-nom').value.trim();
+            const tableIdRaw = document.getElementById('new-table').value;
+            const table_id = tableIdRaw ? parseInt(tableIdRaw) : null;
 
-            if (genre === 'Couple') {
-                const nomCouple = nom2 ? `${nom1} & ${nom2}` : nom1;
-                recordsToInsert = [
-                    { nom_complet: `M. R. ${nomCouple}`, genre: 'Monsieur', table_attribuee },
-                    { nom_complet: `M. M. E. ${nomCouple}`, genre: 'Madame', table_attribuee }
-                ];
-            } else if (genre === 'Monsieur') {
-                recordsToInsert = [
-                    { nom_complet: `Mr. ${nom1}`, genre: 'Monsieur', table_attribuee }
-                ];
-            } else if (genre === 'Madame') {
-                recordsToInsert = [
-                    { nom_complet: `Mme. ${nom1}`, genre: 'Madame', table_attribuee }
-                ];
-            }
+            const recordToInsert = {
+                civilite: civilite,
+                nom_complet: nom,
+                table_id: table_id
+            };
 
             try {
                 const { error } = await supabaseClient
                     .from('guest')
-                    .insert(recordsToInsert);
+                    .insert([recordToInsert]);
                     
                 if (error) throw error;
                 
                 closeAddGuestModal();
                 event.target.reset();
-                toggleCoupleFields();
-                await fetchGuests();
+                await fetchAppData();
             } catch (err) {
                 alert("Erreur : " + err.message);
             } finally {
@@ -870,44 +823,9 @@
             }
         }
 
-        function openAddTableModal() {
-            document.getElementById('add-table-modal').classList.remove('hidden');
-        }
-
-        function closeAddTableModal() {
-            document.getElementById('add-table-modal').classList.add('hidden');
-        }
-
-        async function handleAddNewTable(event) {
-            event.preventDefault();
-            const submitBtn = document.getElementById('submit-table-btn');
-            const tableName = document.getElementById('new-table-name').value.trim();
-            if (!tableName) return;
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Création...";
-
-            try {
-                const { error } = await supabaseClient
-                    .from('guest')
-                    .insert([{ nom_complet: `[Table] ${tableName}`, genre: 'Système', table_attribuee: tableName, present: false }]);
-
-                if (error) throw error;
-
-                closeAddTableModal();
-                event.target.reset();
-                await fetchGuests();
-            } catch (err) {
-                alert("Erreur lors de la création de la table : " + err.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Créer la table";
-            }
-        }
-
         async function deleteGuest(id, event) {
             if (event) event.stopPropagation();
-            if (!confirm("Voulez-vous vraiment supprimer cet élément de la base de données ?")) return;
+            if (!confirm("Voulez-vous vraiment supprimer cet invité de la base de données ?")) return;
 
             try {
                 const { error } = await supabaseClient
@@ -916,7 +834,7 @@
                     .eq('id', id);
 
                 if (error) throw error;
-                await fetchGuests();
+                await fetchAppData();
             } catch (err) {
                 alert("Erreur lors de la suppression : " + err.message);
             }
@@ -930,8 +848,9 @@
             if (!guest) return;
 
             editingGuestId = guest.id;
+            document.getElementById('edit-civilite').value = guest.civilite || 'Monsieur / Madame';
             document.getElementById('edit-nom').value = guest.nom_complet;
-            document.getElementById('edit-table').value = guest.table_attribuee || 'Table générale';
+            document.getElementById('edit-table').value = guest.table_id || '';
             document.getElementById('edit-guest-modal').classList.remove('hidden');
         }
 
@@ -944,19 +863,25 @@
             event.preventDefault();
             if (!editingGuestId) return;
 
+            const nouvelleCivilite = document.getElementById('edit-civilite').value;
             const nouveauNom = document.getElementById('edit-nom').value.trim();
-            const nouvelleTable = document.getElementById('edit-table').value;
+            const nouvelleTableRaw = document.getElementById('edit-table').value;
+            const nouvelleTableId = nouvelleTableRaw ? parseInt(nouvelleTableRaw) : null;
 
             try {
                 const { error } = await supabaseClient
                     .from('guest')
-                    .update({ nom_complet: nouveauNom, table_attribuee: nouvelleTable })
+                    .update({ 
+                        civilite: nouvelleCivilite, 
+                        nom_complet: nouveauNom, 
+                        table_id: nouvelleTableId 
+                    })
                     .eq('id', editingGuestId);
 
                 if (error) throw error;
 
                 closeEditModal();
-                await fetchGuests();
+                await fetchAppData();
             } catch (err) {
                 alert("Erreur lors de la mise à jour : " + err.message);
             }
@@ -970,7 +895,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            fetchGuests();
+            fetchAppData();
         });
     </script>
 </body>

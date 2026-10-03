@@ -371,8 +371,9 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://ioswtwteahaumpgmingq.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_faan40oD96N14XPBXfz0ow_wWfwdFoS';
+        // Nouvelles clés Supabase configurées
+        const SUPABASE_URL = 'https://hjqwcaqksgpdrdqntcmc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_zbwRsxGISUJMb-MFrKg5lg_onu_AK0V';
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let allGuests = [];
@@ -753,7 +754,7 @@
             document.getElementById('modal-guest-name').textContent = guest.nom_complet || 'Invité';
             document.getElementById('modal-table-name').innerHTML = `<i data-lucide="utensils" class="w-4 h-4 text-slate-500"></i> ${guest.table_attribuee || 'Table générale'}`;
             
-            const inviteLink = `https://steve-joyce.ideeal.site/?nom=${encodeURIComponent(guest.nom_complet)}`;
+            const inviteLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodeURIComponent(guest.nom_complet)}`;
             document.getElementById('modal-invite-link').value = inviteLink;
             document.getElementById('modal-drinks').textContent = guest.boisson || 'Aucune préférence de boisson renseignée.';
             
@@ -772,7 +773,7 @@
         let currentShareLink = '';
         function openShareModal(encodedName) {
             const guestName = decodeURIComponent(encodedName);
-            currentShareLink = `https://steve-joyce.ideeal.site/?nom=${encodedName}`;
+            currentShareLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodedName}`;
             
             document.getElementById('share-modal-subtitle').textContent = `Invité(e) : ${guestName}`;
             

@@ -3,370 +3,975 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Invités - Mariage</title>
-    <!-- Tailwind CSS pour un design propre et rapide -->
+    <title>Gestion des Invités & Tables</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SDK Supabase -->
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800">
-
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- En-tête -->
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-800/60 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-md">
             <div>
-                <h1 class="text-3xl font-bold text-indigo-900">💍 Gestion des Invités</h1>
-                <p class="text-sm text-gray-600">Interface connectée à Supabase (Tables & Invités)</p>
+                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent">
+                    Gestion des Invités & Événement
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">Consultez les tables, les choix de boissons, la playlist et les messages des invités.</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="openTableManager()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow font-medium transition">
-                    Gérer la liste des tables
+            
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Statistiques rapides -->
+                <div class="flex gap-3">
+                    <div class="bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-700/40 text-center">
+                        <span id="total-count" class="block text-xl font-bold text-indigo-400">0</span>
+                        <span class="text-xs text-slate-400">Invités</span>
+                    </div>
+                    <div class="bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-700/40 text-center">
+                        <span id="tables-count" class="block text-xl font-bold text-pink-400">0</span>
+                        <span class="text-xs text-slate-400">Tables</span>
+                    </div>
+                </div>
+                <!-- Bouton Ajouter une table -->
+                <button onclick="openAddTableModal()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl text-sm transition border border-slate-600 shadow-lg">
+                    <i data-lucide="plus-square" class="w-4 h-4"></i>
+                    <span>Ajouter une table</span>
+                </button>
+                <!-- Bouton Ajouter un invité -->
+                <button onclick="openAddGuestModal()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    <span>Ajouter un invité</span>
                 </button>
             </div>
         </header>
 
-        <!-- Tableau des invités -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden mb-10">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-800">Liste des Invités</h2>
-                <span id="guest-count" class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">0 invité(s)</span>
+        <!-- Navigation par Onglets -->
+        <div class="flex flex-wrap border-b border-slate-700/60 gap-2 sm:gap-6 text-sm font-medium">
+            <button id="tab-guests-btn" onclick="switchMainTab('guests')" class="pb-3 border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition px-1">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Invités & Tables</span>
+            </button>
+            <button id="tab-drinks-btn" onclick="switchMainTab('drinks')" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition px-1">
+                <i data-lucide="wine" class="w-4 h-4"></i>
+                <span>Boissons</span>
+            </button>
+            <button id="tab-music-btn" onclick="switchMainTab('music')" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition px-1">
+                <i data-lucide="music" class="w-4 h-4"></i>
+                <span>Musiques</span>
+            </button>
+            <button id="tab-messages-btn" onclick="switchMainTab('messages')" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition px-1">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                <span>Messages</span>
+            </button>
+            <button id="tab-stats-btn" onclick="switchMainTab('stats')" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition px-1">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                <span>Aperçu Présences</span>
+            </button>
+        </div>
+
+        <!-- ONGLET 1 : LISTE DES INVITÉS & TABLES -->
+        <div id="tab-content-guests" class="space-y-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        oninput="applyFilterAndRender()"
+                        placeholder="Rechercher un invité ou une table..." 
+                        class="w-full pl-12 pr-4 py-3 bg-slate-800/80 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-400 transition"
+                    >
+                </div>
+                <div class="flex bg-slate-800/80 p-1.5 rounded-xl border border-slate-700 self-start sm:self-auto">
+                    <button id="view-grid-btn" onclick="setViewMode('grid')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                        <span>Individuel</span>
+                    </button>
+                    <button id="view-table-btn" onclick="setViewMode('grouped')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition">
+                        <i data-lucide="utensils" class="w-4 h-4"></i>
+                        <span>Par Table</span>
+                    </button>
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
-                            <th class="py-3 px-4">Civilité & Nom</th>
-                            <th class="py-3 px-4">Table</th>
-                            <th class="py-3 px-4">Présent</th>
-                            <th class="py-3 px-4">Boisson</th>
-                            <th class="py-3 px-4">Chansons / Message</th>
-                            <th class="py-3 px-4 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="guests-table-body" class="divide-y divide-gray-200 text-sm">
-                        <!-- Les invités seront injectés ici dynamiquement -->
-                    </tbody>
-                </table>
+
+            <main id="guests-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-full text-center py-12 text-slate-400">
+                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-400"></i>
+                    <p>Chargement des données Supabase...</p>
+                </div>
+            </main>
+        </div>
+
+        <!-- ONGLET 2 : BOISSONS -->
+        <div id="tab-content-drinks" class="hidden space-y-6">
+            <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                <p class="text-sm text-slate-300">Sélectionnez une boisson pour voir qui l'a choisie.</p>
+                <span id="total-drinks-types" class="text-xs font-semibold px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/30">0 variétés</span>
             </div>
+            <div id="drinks-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- ONGLET 3 : MUSIQUES -->
+        <div id="tab-content-music" class="hidden space-y-6">
+            <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                <p class="text-sm text-slate-300">Liste des morceaux demandés par les invités (triés par nombre de votes).</p>
+                <span id="total-songs-count" class="text-xs font-semibold px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full border border-pink-500/30">0 titres</span>
+            </div>
+            <div id="songs-list" class="space-y-3"></div>
+        </div>
+
+        <!-- ONGLET 4 : MESSAGES -->
+        <div id="tab-content-messages" class="hidden space-y-6">
+            <div id="messages-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- ONGLET 5 : STATISTIQUES PRESENCE -->
+        <div id="tab-content-stats" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl">
+                    <span class="text-xs text-slate-400 block uppercase font-bold tracking-wider">Confirmés</span>
+                    <span id="stat-confirmed" class="text-3xl font-extrabold text-emerald-400 mt-2 block">0</span>
+                </div>
+                <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl">
+                    <span class="text-xs text-slate-400 block uppercase font-bold tracking-wider">Absents</span>
+                    <span id="stat-declined" class="text-3xl font-extrabold text-red-400 mt-2 block">0</span>
+                </div>
+                <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl">
+                    <span class="text-xs text-slate-400 block uppercase font-bold tracking-wider">Sans réponse</span>
+                    <span id="stat-pending" class="text-3xl font-extrabold text-amber-400 mt-2 block">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE INVITÉS AYANT CHOISI UNE BOISSON SPECIFIQUE -->
+    <div id="drink-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <button onclick="closeDrinkModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/60 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
+                    <i data-lucide="wine" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 id="drink-modal-title" class="text-xl font-bold text-white"></h3>
+                    <p id="drink-modal-count" class="text-xs text-slate-400"></p>
+                </div>
+            </div>
+            <ul id="drink-modal-guests" class="space-y-2 max-h-60 overflow-y-auto pr-1"></ul>
+        </div>
+    </div>
+
+    <!-- MODALE DE DÉTAILS DE L'INVITÉ -->
+    <div id="guest-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/60 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-2">
+                <div id="modal-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"></div>
+                <h2 id="modal-guest-name" class="text-2xl font-bold text-white"></h2>
+                <p id="modal-table-name" class="text-sm text-slate-400 flex items-center gap-1.5"></p>
+                
+                <div class="bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-xl space-y-2 mt-4">
+                    <span class="text-xs font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="link" class="w-4 h-4"></i> Lien d'invitation personnalisé
+                    </span>
+                    <div class="flex gap-2">
+                        <input type="text" id="modal-invite-link" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono focus:outline-none">
+                        <button onclick="copyInviteLink()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1 whitespace-nowrap">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copier
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4 border-t border-slate-800 pt-4">
+                <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-2 text-indigo-400 font-semibold mb-2">
+                        <i data-lucide="wine" class="w-4 h-4"></i>
+                        <span>Préférence de boisson</span>
+                    </div>
+                    <p id="modal-drinks" class="text-sm text-slate-300 italic"></p>
+                </div>
+                <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-2 text-pink-400 font-semibold mb-2">
+                        <i data-lucide="music" class="w-4 h-4"></i>
+                        <span>Chansons suggérées</span>
+                    </div>
+                    <p id="modal-songs" class="text-sm text-slate-300 italic"></p>
+                </div>
+                <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-2 text-amber-400 font-semibold mb-2">
+                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                        <span>Mot pour les mariés</span>
+                    </div>
+                    <p id="modal-message" class="text-sm text-slate-300 italic leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE DE PARTAGE RAPIDE WHATSAPP / AUTRES -->
+    <div id="share-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/60 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
+                    <i data-lucide="share-2" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Partager l'invitation</h3>
+                    <p id="share-modal-subtitle" class="text-xs text-slate-400"></p>
+                </div>
+            </div>
+            <div class="space-y-3 pt-2">
+                <a id="share-whatsapp-btn" href="#" target="_blank" class="w-full flex items-center justify-between p-3.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 rounded-xl text-emerald-300 font-semibold transition">
+                    <span class="flex items-center gap-2.5">
+                        <i data-lucide="message-circle" class="w-5 h-5 text-emerald-400"></i> Envoyer via WhatsApp
+                    </span>
+                    <i data-lucide="external-link" class="w-4 h-4 text-emerald-400"></i>
+                </a>
+                <button onclick="copyShareModalLink()" class="w-full flex items-center justify-between p-3.5 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 rounded-xl text-slate-200 font-semibold transition">
+                    <span class="flex items-center gap-2.5">
+                        <i data-lucide="copy" class="w-5 h-5 text-indigo-400"></i> Copier le lien d'invitation
+                    </span>
+                    <span id="copy-feedback" class="text-xs text-indigo-400">Copier</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE D'AJOUT D'UN INVITÉ -->
+    <div id="add-guest-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <button onclick="closeAddGuestModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/60 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
+                    <i data-lucide="user-plus" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Ajouter un nouvel invité</h3>
+                    <p class="text-xs text-slate-400">Enregistrement direct dans Supabase</p>
+                </div>
+            </div>
+            <form onsubmit="handleAddNewGuest(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Genre / Catégorie</label>
+                    <select id="new-genre" onchange="toggleCoupleFields()" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="Monsieur">Monsieur</option>
+                        <option value="Madame">Madame</option>
+                        <option value="Couple">Couple</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label id="label-nom-1" class="block text-xs font-semibold text-slate-300 mb-1">Nom complet *</label>
+                    <input type="text" id="new-nom-1" required placeholder="Ex: Jean Dupont" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                
+                <div id="container-nom-2" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nom complet du conjoint(e) *</label>
+                    <input type="text" id="new-nom-2" placeholder="Ex: Marie Dupont" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Table attribuée</label>
+                    <select id="new-table" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="Table générale">Table générale</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="submit-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition">
+                    Enregistrer l'invité
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE D'AJOUT D'UNE TABLE -->
+    <div id="add-table-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <button onclick="closeAddTableModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/60 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="p-2.5 bg-pink-500/20 text-pink-400 rounded-xl border border-pink-500/30">
+                    <i data-lucide="plus-square" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Ajouter une nouvelle table</h3>
+                    <p class="text-xs text-slate-400">Création d'une table vide</p>
+                </div>
+            </div>
+            <form onsubmit="handleAddNewTable(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nom de la table *</label>
+                    <input type="text" id="new-table-name" required placeholder="Ex: Table VIP" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="submit-table-btn" class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-xl transition">
+                    Créer la table
+                </button>
+            </form>
         </div>
     </div>
 
     <!-- MODALE DE MODIFICATION D'UN INVITÉ -->
-    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Modifier l'invité</h3>
-            <form id="edit-guest-form" onsubmit="handleUpdateGuest(event)" class="space-y-4">
-                <input type="hidden" id="edit-id">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Civilité</label>
-                        <input type="text" id="edit-civilite" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Nom complet</label>
-                        <input type="text" id="edit-nom-complet" required class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                    </div>
+    <div id="edit-guest-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <button onclick="closeEditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/60 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+                    <i data-lucide="edit-3" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700">Table assignée</label>
-                    <select id="edit-table-select" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                        <!-- Options de tables chargées dynamiquement -->
+                    <h3 class="text-xl font-bold text-white">Modifier l'invité</h3>
+                    <p class="text-xs text-slate-400">Mise à jour dans Supabase</p>
+                </div>
+            </div>
+            <form onsubmit="handleEditGuest(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nom complet *</label>
+                    <input type="text" id="edit-nom" required class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Table attribuée</label>
+                    <select id="edit-table" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="Table générale">Table générale</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700">Présence</label>
-                    <select id="edit-present" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                        <option value="true">Présent(e)</option>
-                        <option value="false">Absent(e)</option>
-                        <option value="">Non renseigné</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700">Boisson</label>
-                    <input type="text" id="edit-boisson" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Chanson 1</label>
-                        <input type="text" id="edit-chanson-1" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Chanson 2</label>
-                        <input type="text" id="edit-chanson-2" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Chanson 3</label>
-                        <input type="text" id="edit-chanson-3" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700">Message</label>
-                    <textarea id="edit-message" rows="2" class="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm"></textarea>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('edit-modal')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300">Annuler</button>
-                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Enregistrer</button>
-                </div>
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition">
+                    Enregistrer les modifications
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- MODALE DE GESTION DES TABLES -->
-    <div id="table-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Gestion des Tables (`table_list`)</h3>
-            
-            <!-- Formulaire d'ajout de table -->
-            <form onsubmit="handleAddNewTable(event)" class="flex gap-2 mb-4">
-                <input type="text" id="new-table-name" placeholder="Nom de la nouvelle table..." required class="flex-1 border border-gray-300 rounded-md p-2 text-sm">
-                <button type="submit" class="bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700">Ajouter</button>
-            </form>
-
-            <!-- Liste des tables existantes -->
-            <div class="border border-gray-200 rounded-md max-h-60 overflow-y-auto mb-4 p-2" id="tables-list-container">
-                <!-- Injection dynamique des tables -->
-            </div>
-
-            <div class="flex justify-end">
-                <button type="button" onclick="closeModal('table-modal')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300">Fermer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPTS SUPABASE & LOGIQUE -->
     <script>
-        // REMPLACEZ CES VALEURS PAR VOS VRAIES CLÉS SUPABASE
-        const SUPABASE_URL = 'VOTRE_SUPABASE_URL';
-        const SUPABASE_ANON_KEY = 'VOTRE_SUPABASE_ANON_KEY';
+        // Nouvelles clés Supabase configurées
+        const SUPABASE_URL = 'https://hjqwcaqksgpdrdqntcmc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_zbwRsxGISUJMb-MFrKg5lg_onu_AK0V';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let allGuests = [];
+        let currentViewMode = 'grid';
 
-        // Chargement initial
-        document.addEventListener('DOMContentLoaded', () => {
-            loadGuests();
-        });
-
-        // 1. Récupérer et afficher les invités (avec relation table_list)
-        async function loadGuests() {
-            const { data: guests, error } = await supabase
-                .from('guest')
-                .select(`
-                    *,
-                    table_list (
-                        id,
-                        nom_table
-                    )
-                `)
-                .order('nom_complet', { ascending: true });
-
-            if (error) {
-                console.error("Erreur chargement invités:", error);
-                alert("Erreur lors du chargement des invités.");
-                return;
-            }
-
-            const tbody = document.getElementById('guests-table-body');
-            document.getElementById('guest-count').textContent = `${guests.length} invité(s)`;
-            tbody.innerHTML = '';
-
-            guests.forEach(guest => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50';
-                
-                const tableName = guest.table_list ? guest.table_list.nom_table : '<span class="text-gray-400 italic">Non assignée</span>';
-                let presentBadge = '<span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600">Inconnu</span>';
-                if (guest.present === true) presentBadge = '<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800 font-semibold">Présent</span>';
-                if (guest.present === false) presentBadge = '<span class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 font-semibold">Absent</span>';
-
-                tr.innerHTML = `
-                    <td class="py-3 px-4">
-                        <div class="font-medium text-gray-900">${guest.nom_complet}</div>
-                        <div class="text-xs text-gray-500">${guest.civilite || ''}</div>
-                    </td>
-                    <td class="py-3 px-4">${tableName}</td>
-                    <td class="py-3 px-4">${presentBadge}</td>
-                    <td class="py-3 px-4 text-gray-600">${guest.boisson || '-'}</td>
-                    <td class="py-3 px-4 text-xs text-gray-500 max-w-xs truncate">
-                        ${guest.chanson_1 ? '🎵 ' + guest.chanson_1 : ''}
-                        ${guest.message ? '<br>💬 ' + guest.message : ''}
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick='openEditModal(${JSON.stringify(guest)})' class="text-indigo-600 hover:text-indigo-900 font-medium text-xs bg-indigo-50 px-2.5 py-1.5 rounded">Modifier</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // 2. Charger les options du menu déroulant des tables
-        async function loadTablesDropdown(selectedTableId = null) {
-            const { data: tables, error } = await supabase
-                .from('table_list')
-                .select('*')
-                .order('nom_table', { ascending: true });
-
-            if (error) {
-                console.error("Erreur tables:", error);
-                return;
-            }
-
-            const select = document.getElementById('edit-table-select');
-            select.innerHTML = '<option value="">-- Aucune table --</option>';
-
-            tables.forEach(table => {
-                const option = document.createElement('option');
-                option.value = table.id;
-                option.textContent = table.nom_table;
-                if (table.id === selectedTableId) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
-            });
-        }
-
-        // 3. Ouvrir la modale d'édition d'un invité
-        async function openEditModal(guest) {
-            document.getElementById('edit-id').value = guest.id;
-            document.getElementById('edit-civilite').value = guest.civilite || '';
-            document.getElementById('edit-nom-complet').value = guest.nom_complet || '';
-            document.getElementById('edit-present').value = guest.present === null ? "" : String(guest.present);
-            document.getElementById('edit-boisson').value = guest.boisson || '';
-            document.getElementById('edit-chanson-1').value = guest.chanson_1 || '';
-            document.getElementById('edit-chanson-2').value = guest.chanson_2 || '';
-            document.getElementById('edit-chanson-3').value = guest.chanson_3 || '';
-            document.getElementById('edit-message').value = guest.message || '';
-
-            await loadTablesDropdown(guest.table_id);
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        // 4. Soumettre la modification de l'invité
-        async function handleUpdateGuest(event) {
-            event.preventDefault();
-            const id = document.getElementById('edit-id').value;
-            const tableIdVal = document.getElementById('edit-table-select').value;
-            const presentVal = document.getElementById('edit-present').value;
-
-            const formData = {
-                civilite: document.getElementById('edit-civilite').value,
-                nom_complet: document.getElementById('edit-nom-complet').value,
-                table_id: tableIdVal ? parseInt(tableIdVal) : null,
-                present: presentVal === "" ? null : presentVal === "true",
-                boisson: document.getElementById('edit-boisson').value,
-                chanson_1: document.getElementById('edit-chanson-1').value,
-                chanson_2: document.getElementById('edit-chanson-2').value,
-                chanson_3: document.getElementById('edit-chanson-3').value,
-                message: document.getElementById('edit-message').value
-            };
-
-            const { error } = await supabase
-                .from('guest')
-                .update(formData)
-                .eq('id', id);
-
-            if (error) {
-                console.error("Erreur mise à jour:", error);
-                alert("Erreur lors de la mise à jour de l'invité.");
+        function getGuestType(genre) {
+            const clean = genre ? genre.trim().toLowerCase() : '';
+            if (clean.includes('couple')) {
+                return { label: 'Couple', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', icon: 'users' };
+            } else if (clean.includes('madame') || clean.includes('mme')) {
+                return { label: 'Madame', color: 'bg-pink-500/10 text-pink-400 border-pink-500/20', icon: 'user-check' };
             } else {
-                closeModal('edit-modal');
-                loadGuests();
+                return { label: 'Monsieur', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', icon: 'user' };
             }
         }
 
-        // 5. Gestionnaire de la liste des tables (table_list)
-        async function openTableManager() {
-            await renderTablesList();
-            document.getElementById('table-modal').classList.remove('hidden');
+        function getPresenceBadge(present) {
+            if (present === true) {
+                return { label: 'Présent', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30', dot: 'bg-emerald-400' };
+            } else if (present === false) {
+                return { label: 'Absent', color: 'bg-red-500/10 text-red-400 border-red-500/30', dot: 'bg-red-400' };
+            } else {
+                return { label: 'En attente', color: 'bg-amber-500/10 text-amber-400 border-amber-500/30', dot: 'bg-amber-400 animate-pulse' };
+            }
         }
 
-        async function renderTablesList() {
-            const { data: tables, error } = await supabase
-                .from('table_list')
-                .select('*')
-                .order('nom_table', { ascending: true });
-
-            if (error) {
-                console.error("Erreur:", error);
-                return;
-            }
-
-            const container = document.getElementById('tables-list-container');
-            container.innerHTML = '';
-
-            if (tables.length === 0) {
-                container.innerHTML = '<p class="text-xs text-gray-400 text-center py-2">Aucune table enregistrée.</p>';
-                return;
-            }
-
-            tables.forEach(table => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0 text-sm';
-                div.innerHTML = `
-                    <span class="font-medium text-gray-700">${table.nom_table}</span>
-                    <div class="flex gap-2">
-                        <button onclick="renameTablePrompt(${table.id}, '${table.nom_table.replace(/'/g, "\\'")}')" class="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 px-2 py-1 rounded">Renommer</button>
-                        <button onclick="deleteTable(${table.id})" class="text-red-600 hover:text-red-800 text-xs bg-red-50 px-2 py-1 rounded">Supprimer</button>
+        async function fetchGuests() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('guest')
+                    .select('*')
+                    .order('table_attribuee', { ascending: true });
+                if (error) throw error;
+                allGuests = data || [];
+                updateStats(allGuests);
+                updateTablesDropdown(allGuests);
+                applyFilterAndRender();
+                renderDrinksTab();
+                renderMusicTab();
+                renderMessagesTab();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('guests-grid').innerHTML = `
+                    <div class="col-span-full bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-center">
+                        Erreur de connexion à Supabase : ${err.message}
                     </div>
                 `;
-                container.appendChild(div);
+            }
+        }
+
+        function updateStats(guests) {
+            document.getElementById('total-count').textContent = guests.length;
+            const uniqueTables = new Set(guests.map(g => g.table_attribuee || 'Table générale')).size;
+            document.getElementById('tables-count').textContent = uniqueTables;
+            let confirmed = 0, declined = 0, pending = 0;
+            guests.forEach(g => {
+                if (g.present === true) confirmed++;
+                else if (g.present === false) declined++;
+                else pending++;
             });
+            document.getElementById('stat-confirmed').textContent = confirmed;
+            document.getElementById('stat-declined').textContent = declined;
+            document.getElementById('stat-pending').textContent = pending;
+        }
+
+        function updateTablesDropdown(guests) {
+            const tableSelect = document.getElementById('new-table');
+            const editTableSelect = document.getElementById('edit-table');
+            const uniqueTables = Array.from(new Set(guests.map(g => g.table_attribuee || 'Table générale'))).sort();
+            
+            const optionsHtml = uniqueTables.map(tableName => `
+                <option value="${tableName}">${tableName}</option>
+            `).join('');
+
+            if(tableSelect) tableSelect.innerHTML = optionsHtml;
+            if(editTableSelect) editTableSelect.innerHTML = optionsHtml;
+        }
+
+        function switchMainTab(tab) {
+            const tabs = ['guests', 'drinks', 'music', 'messages', 'stats'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}-btn`);
+                const content = document.getElementById(`tab-content-${t}`);
+                if (t === tab) {
+                    btn.className = "pb-3 border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition px-1";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition px-1";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const gridBtn = document.getElementById('view-grid-btn');
+            const tableBtn = document.getElementById('view-table-btn');
+            if (mode === 'grid') {
+                gridBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white";
+                tableBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition";
+            } else {
+                tableBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white";
+                gridBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition";
+            }
+            applyFilterAndRender();
+        }
+
+        function applyFilterAndRender() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allGuests.filter(g => 
+                (g.nom_complet && g.nom_complet.toLowerCase().includes(query)) || 
+                (g.table_attribuee && g.table_attribuee.toLowerCase().includes(query))
+            );
+            if (currentViewMode === 'grid') {
+                renderGridView(filtered);
+            } else {
+                renderGroupedView(filtered);
+            }
+        }
+
+        function renderGridView(guests) {
+            const grid = document.getElementById('guests-grid');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
+            if (guests.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">Aucun invité trouvé.</div>`;
+                return;
+            }
+            grid.innerHTML = guests.map(guest => {
+                const type = getGuestType(guest.genre);
+                const presence = getPresenceBadge(guest.present);
+                return `
+                    <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl transition duration-200 hover:border-indigo-500/50 flex flex-col justify-between space-y-4">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-1 cursor-pointer flex-1" onclick="openGuestDetails('${guest.id}')">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-semibold text-lg text-slate-100 hover:text-indigo-300 transition">${guest.nom_complet}</h3>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${presence.color}">
+                                        <span class="w-1.5 h-1.5 rounded-full ${presence.dot}"></span>
+                                        ${presence.label}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-400 flex items-center gap-1">
+                                    <i data-lucide="utensils" class="w-3.5 h-3.5 text-slate-500"></i>
+                                    ${guest.table_attribuee || 'Table générale'}
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                <button onclick="openShareModal('${encodeURIComponent(guest.nom_complet)}')" title="Partager l'invitation" class="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl transition">
+                                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="openEditModal('${guest.id}', event)" title="Modifier" class="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl transition">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deleteGuest('${guest.id}', event)" title="Supprimer" class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderGroupedView(guests) {
+            const grid = document.getElementById('guests-grid');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
+            if (guests.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">Aucune table ou invité trouvé.</div>`;
+                return;
+            }
+            const grouped = guests.reduce((acc, guest) => {
+                const tableName = guest.table_attribuee || 'Table générale';
+                if (!acc[tableName]) acc[tableName] = [];
+                acc[tableName].push(guest);
+                return acc;
+            }, {});
+            grid.innerHTML = Object.entries(grouped).map(([tableName, tableGuests]) => {
+                return `
+                    <div class="bg-slate-800/50 border border-slate-700/80 rounded-2xl p-5 space-y-4 shadow-lg backdrop-blur-sm">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-700/60">
+                            <div class="flex items-center gap-2">
+                                <div class="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400">
+                                    <i data-lucide="utensils" class="w-5 h-5"></i>
+                                </div>
+                                <h2 class="font-bold text-lg text-slate-100">${tableName}</h2>
+                            </div>
+                            <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs px-3 py-1 rounded-full font-semibold">
+                                ${tableGuests.length} invité${tableGuests.length > 1 ? 's' : ''}
+                            </span>
+                        </div>
+                        <ul class="space-y-2.5">
+                            ${tableGuests.map(guest => {
+                                const presence = getPresenceBadge(guest.present);
+                                return `
+                                    <li class="flex items-center justify-between p-2.5 bg-slate-900/60 rounded-xl border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/80 transition">
+                                        <div onclick="openGuestDetails('${guest.id}')" class="cursor-pointer flex items-center gap-2 flex-1">
+                                            <span class="text-sm text-slate-200 font-medium hover:text-indigo-300">${guest.nom_complet}</span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${presence.color}">
+                                                <span class="w-1.5 h-1.5 rounded-full ${presence.dot}"></span>
+                                                ${presence.label}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="openShareModal('${encodeURIComponent(guest.nom_complet)}')" title="Partager" class="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg transition">
+                                                <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <button onclick="openEditModal('${guest.id}', event)" title="Modifier" class="p-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-lg transition">
+                                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <button onclick="deleteGuest('${guest.id}', event)" title="Supprimer" class="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition">
+                                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                        </div>
+                                    </li>
+                                `;
+                            }).join('')}
+                        </ul>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderDrinksTab() {
+            const container = document.getElementById('drinks-grid');
+            const drinksMap = {};
+            allGuests.forEach(guest => {
+                const drinkStr = guest.boisson;
+                if (drinkStr) {
+                    const list = drinkStr.split(/,|\//).map(s => s.trim()).filter(Boolean);
+                    list.forEach(drink => {
+                        const formatted = drink.charAt(0).toUpperCase() + drink.slice(1);
+                        if (!drinksMap[formatted]) drinksMap[formatted] = [];
+                        drinksMap[formatted].push(guest);
+                    });
+                }
+            });
+            const sortedDrinks = Object.entries(drinksMap).sort((a, b) => b[1].length - a[1].length);
+            document.getElementById('total-drinks-types').textContent = `${sortedDrinks.length} choix différents`;
+            if (sortedDrinks.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">Aucun choix de boisson enregistré.</div>`;
+                return;
+            }
+            window.drinksMap = drinksMap;
+            container.innerHTML = sortedDrinks.map(([drink, guests]) => {
+                return `
+                    <div onclick="openDrinkGuestsModal('${drink}')" class="cursor-pointer bg-slate-800/40 hover:bg-slate-800/90 border border-slate-700/60 p-5 rounded-2xl transition hover:border-indigo-500/50 flex items-center justify-between">
+                        <div class="space-y-1">
+                            <h3 class="font-semibold text-lg text-slate-100">${drink}</h3>
+                            <p class="text-xs text-indigo-400">Cliquez pour voir la liste</p>
+                        </div>
+                        <span class="text-2xl font-black text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-xl">
+                            ${guests.length}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function openDrinkGuestsModal(drinkName) {
+            const guests = window.drinksMap[drinkName] || [];
+            document.getElementById('drink-modal-title').textContent = drinkName;
+            document.getElementById('drink-modal-count').textContent = `${guests.length} invité(s) ont choisi cette boisson`;
+            
+            const list = document.getElementById('drink-modal-guests');
+            list.innerHTML = guests.map(g => `
+                <li class="p-2.5 bg-slate-800/60 rounded-xl border border-slate-700/50 text-sm text-slate-200 flex justify-between items-center">
+                    <span class="font-medium">${g.nom_complet}</span>
+                    <span class="text-xs text-slate-400">${g.table_attribuee || 'Table générale'}</span>
+                </li>
+            `).join('');
+            document.getElementById('drink-modal').classList.remove('hidden');
+        }
+
+        function closeDrinkModal() {
+            document.getElementById('drink-modal').classList.add('hidden');
+        }
+
+        function renderMusicTab() {
+            const container = document.getElementById('songs-list');
+            const songsMap = {};
+            allGuests.forEach(guest => {
+                const songFields = [guest.chanson_1, guest.chanson_2, guest.chanson_3];
+                songFields.forEach(songStr => {
+                    if (songStr && songStr.trim() !== '') {
+                        const song = songStr.trim();
+                        const key = song.toLowerCase();
+                        if (!songsMap[key]) {
+                            songsMap[key] = { originalName: song, count: 0, requestedBy: [] };
+                        }
+                        songsMap[key].count++;
+                        if (!songsMap[key].requestedBy.includes(guest.nom_complet)) {
+                            songsMap[key].requestedBy.push(guest.nom_complet);
+                        }
+                    }
+                });
+            });
+            const sortedSongs = Object.values(songsMap).sort((a, b) => b.count - a.count);
+            document.getElementById('total-songs-count').textContent = `${sortedSongs.length} titre(s) au total`;
+            if (sortedSongs.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-500">Aucune chanson suggérée pour le moment.</div>`;
+                return;
+            }
+            container.innerHTML = sortedSongs.map(item => `
+                <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-pink-500/10 text-pink-400 rounded-xl border border-pink-500/20">
+                            <i data-lucide="disc" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-200">${item.originalName}</h4>
+                            <p class="text-xs text-slate-400 mt-0.5">Suggéré par : ${item.requestedBy.join(', ')}</p>
+                        </div>
+                    </div>
+                    ${item.count > 1 ? `
+                        <span class="bg-pink-500/20 text-pink-300 border border-pink-500/30 font-bold text-xs px-2.5 py-1 rounded-full whitespace-nowrap">
+                            x${item.count}
+                        </span>
+                    ` : ''}
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderMessagesTab() {
+            const container = document.getElementById('messages-grid');
+            const messages = allGuests.filter(g => g.message && g.message.trim() !== '');
+            if (messages.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">Aucun message laissé par les invités.</div>`;
+                return;
+            }
+            container.innerHTML = messages.map(guest => {
+                const msg = guest.message;
+                return `
+                    <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl flex flex-col justify-between space-y-3">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-700/50">
+                                <h4 class="font-bold text-slate-200">${guest.nom_complet}</h4>
+                                <span class="text-xs text-slate-400">${guest.table_attribuee || 'Table générale'}</span>
+                            </div>
+                            <p id="msg-text-${guest.id}" class="text-sm text-slate-300 italic leading-relaxed line-clamp-3">
+                                "${msg}"
+                            </p>
+                        </div>
+                        ${msg.length > 120 ? `
+                            <button onclick="toggleMessage('${guest.id}')" id="msg-btn-${guest.id}" class="text-xs text-indigo-400 font-semibold self-start hover:underline focus:outline-none">
+                                Voir plus
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function toggleMessage(id) {
+            const textElem = document.getElementById(`msg-text-${id}`);
+            const btnElem = document.getElementById(`msg-btn-${id}`);
+            if (textElem.classList.contains('line-clamp-3')) {
+                textElem.classList.remove('line-clamp-3');
+                btnElem.textContent = 'Réduire';
+            } else {
+                textElem.classList.add('line-clamp-3');
+                btnElem.textContent = 'Voir plus';
+            }
+        }
+
+        function openGuestDetails(guestId) {
+            const guest = allGuests.find(g => String(g.id) === String(guestId));
+            if (!guest) return;
+            const presence = getPresenceBadge(guest.present);
+            
+            const badgeEl = document.getElementById('modal-status-badge');
+            badgeEl.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${presence.color}`;
+            badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${presence.dot}"></span> ${presence.label}`;
+            document.getElementById('modal-guest-name').textContent = guest.nom_complet || 'Invité';
+            document.getElementById('modal-table-name').innerHTML = `<i data-lucide="utensils" class="w-4 h-4 text-slate-500"></i> ${guest.table_attribuee || 'Table générale'}`;
+            
+            const inviteLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodeURIComponent(guest.nom_complet)}`;
+            document.getElementById('modal-invite-link').value = inviteLink;
+            document.getElementById('modal-drinks').textContent = guest.boisson || 'Aucune préférence de boisson renseignée.';
+            
+            const songs = [guest.chanson_1, guest.chanson_2, guest.chanson_3].filter(Boolean);
+            document.getElementById('modal-songs').textContent = songs.length > 0 ? songs.join(', ') : 'Aucune chanson suggérée.';
+            
+            document.getElementById('modal-message').textContent = guest.message || 'Aucun message laissé pour les mariés.';
+            document.getElementById('guest-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('guest-modal').classList.add('hidden');
+        }
+
+        let currentShareLink = '';
+        function openShareModal(encodedName) {
+            const guestName = decodeURIComponent(encodedName);
+            currentShareLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodedName}`;
+            
+            document.getElementById('share-modal-subtitle').textContent = `Invité(e) : ${guestName}`;
+            
+            const message = encodeURIComponent(`Bonjour ${guestName}, nous avons le plaisir de vous inviter à notre mariage. Découvrez votre invitation personnalisée ici : ${currentShareLink}`);
+            document.getElementById('share-whatsapp-btn').href = `https://api.whatsapp.com/send?text=${message}`;
+            
+            document.getElementById('share-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+            document.getElementById('copy-feedback').textContent = 'Copier';
+        }
+
+        function copyShareModalLink() {
+            navigator.clipboard.writeText(currentShareLink);
+            document.getElementById('copy-feedback').textContent = 'Copié !';
+            setTimeout(() => {
+                document.getElementById('copy-feedback').textContent = 'Copier';
+            }, 2000);
+        }
+
+        function openAddGuestModal() {
+            document.getElementById('add-guest-modal').classList.remove('hidden');
+        }
+
+        function closeAddGuestModal() {
+            document.getElementById('add-guest-modal').classList.add('hidden');
+        }
+
+        function toggleCoupleFields() {
+            const genre = document.getElementById('new-genre').value;
+            const containerNom2 = document.getElementById('container-nom-2');
+            const labelNom1 = document.getElementById('label-nom-1');
+            const inputNom2 = document.getElementById('new-nom-2');
+            if (genre === 'Couple') {
+                containerNom2.classList.remove('hidden');
+                inputNom2.required = true;
+                labelNom1.textContent = 'Nom complet (Personne 1) *';
+            } else {
+                containerNom2.classList.add('hidden');
+                inputNom2.required = false;
+                inputNom2.value = '';
+                labelNom1.textContent = 'Nom complet *';
+            }
+        }
+
+        async function handleAddNewGuest(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Enregistrement...";
+            
+            const genre = document.getElementById('new-genre').value;
+            const nom1 = document.getElementById('new-nom-1').value.trim();
+            const nom2 = document.getElementById('new-nom-2').value.trim();
+            const table_attribuee = document.getElementById('new-table').value;
+            
+            let recordsToInsert = [];
+
+            if (genre === 'Couple') {
+                const nomCouple = nom2 ? `${nom1} & ${nom2}` : nom1;
+                recordsToInsert = [
+                    { nom_complet: `M. R. ${nomCouple}`, genre: 'Monsieur', table_attribuee },
+                    { nom_complet: `M. M. E. ${nomCouple}`, genre: 'Madame', table_attribuee }
+                ];
+            } else if (genre === 'Monsieur') {
+                recordsToInsert = [
+                    { nom_complet: `Mr. ${nom1}`, genre: 'Monsieur', table_attribuee }
+                ];
+            } else if (genre === 'Madame') {
+                recordsToInsert = [
+                    { nom_complet: `Mme. ${nom1}`, genre: 'Madame', table_attribuee }
+                ];
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('guest')
+                    .insert(recordsToInsert);
+                    
+                if (error) throw error;
+                
+                closeAddGuestModal();
+                event.target.reset();
+                toggleCoupleFields();
+                await fetchGuests();
+            } catch (err) {
+                alert("Erreur : " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Enregistrer l'invité";
+            }
+        }
+
+        function openAddTableModal() {
+            document.getElementById('add-table-modal').classList.remove('hidden');
+        }
+
+        function closeAddTableModal() {
+            document.getElementById('add-table-modal').classList.add('hidden');
         }
 
         async function handleAddNewTable(event) {
             event.preventDefault();
-            const input = document.getElementById('new-table-name');
-            const nom_table = input.value.trim();
-            if (!nom_table) return;
+            const submitBtn = document.getElementById('submit-table-btn');
+            const tableName = document.getElementById('new-table-name').value.trim();
+            if (!tableName) return;
 
-            const { error } = await supabase
-                .from('table_list')
-                .insert([{ nom_table }]);
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Création...";
 
-            if (error) {
-                alert("Erreur lors de l'ajout (peut-être que ce nom de table existe déjà).");
-                console.error(error);
-            } else {
-                input.value = '';
-                renderTablesList();
+            try {
+                const { error } = await supabaseClient
+                    .from('guest')
+                    .insert([{ nom_complet: `[Table] ${tableName}`, genre: 'Système', table_attribuee: tableName, present: false }]);
+
+                if (error) throw error;
+
+                closeAddTableModal();
+                event.target.reset();
+                await fetchGuests();
+            } catch (err) {
+                alert("Erreur lors de la création de la table : " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Créer la table";
             }
         }
 
-        async function renameTablePrompt(id, currentName) {
-            const nouveauNom = prompt("Modifier le nom de la table :", currentName);
-            if (nouveauNom && nouveauNom.trim() !== "" && nouveauNom !== currentName) {
-                const { error } = await supabase
-                    .from('table_list')
-                    .update({ nom_table: nouveauNom.trim() })
-                    .eq('id', id);
+        async function deleteGuest(id, event) {
+            if (event) event.stopPropagation();
+            if (!confirm("Voulez-vous vraiment supprimer cet élément de la base de données ?")) return;
 
-                if (error) {
-                    alert("Erreur lors du renommage.");
-                } else {
-                    renderTablesList();
-                    loadGuests(); // Recharge pour afficher le nouveau nom instantanément
-                }
-            }
-        }
-
-        async function deleteTable(id) {
-            if (confirm("Voulez-vous vraiment supprimer cette table ? (Attention: les invités qui y étaient rattachés perdront leur assignation de table)")) {
-                const { error } = await supabase
-                    .from('table_list')
+            try {
+                const { error } = await supabaseClient
+                    .from('guest')
                     .delete()
                     .eq('id', id);
 
-                if (error) {
-                    alert("Erreur lors de la suppression (vérifiez qu'aucun invité n'y est lié ou que les contraintes le permettent).");
-                } else {
-                    renderTablesList();
-                    loadGuests();
-                }
+                if (error) throw error;
+                await fetchGuests();
+            } catch (err) {
+                alert("Erreur lors de la suppression : " + err.message);
             }
         }
 
-        // Utilitaires modales
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+        let editingGuestId = null;
+
+        function openEditModal(guestId, event) {
+            if (event) event.stopPropagation();
+            const guest = allGuests.find(g => String(g.id) === String(guestId));
+            if (!guest) return;
+
+            editingGuestId = guest.id;
+            document.getElementById('edit-nom').value = guest.nom_complet;
+            document.getElementById('edit-table').value = guest.table_attribuee || 'Table générale';
+            document.getElementById('edit-guest-modal').classList.remove('hidden');
         }
+
+        function closeEditModal() {
+            document.getElementById('edit-guest-modal').classList.add('hidden');
+            editingGuestId = null;
+        }
+
+        async function handleEditGuest(event) {
+            event.preventDefault();
+            if (!editingGuestId) return;
+
+            const nouveauNom = document.getElementById('edit-nom').value.trim();
+            const nouvelleTable = document.getElementById('edit-table').value;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('guest')
+                    .update({ nom_complet: nouveauNom, table_attribuee: nouvelleTable })
+                    .eq('id', editingGuestId);
+
+                if (error) throw error;
+
+                closeEditModal();
+                await fetchGuests();
+            } catch (err) {
+                alert("Erreur lors de la mise à jour : " + err.message);
+            }
+        }
+
+        function copyInviteLink() {
+            const input = document.getElementById('modal-invite-link');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert("Lien personnalisé copié !");
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchGuests();
+        });
     </script>
 </body>
 </html>

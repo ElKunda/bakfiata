@@ -501,6 +501,7 @@
                 return;
             }
             grid.innerHTML = guests.map(guest => {
+                const type = getGuestType(guest.genre);
                 const presence = getPresenceBadge(guest.present);
                 return `
                     <div class="bg-slate-800/40 border border-slate-700/60 p-5 rounded-2xl transition duration-200 hover:border-indigo-500/50 flex flex-col justify-between space-y-4">
@@ -752,7 +753,7 @@
             document.getElementById('modal-guest-name').textContent = guest.nom_complet || 'Invité';
             document.getElementById('modal-table-name').innerHTML = `<i data-lucide="utensils" class="w-4 h-4 text-slate-500"></i> ${guest.table_attribuee || 'Table générale'}`;
             
-            const inviteLink = `https://ablyfiata.ideeal.site/?nom=${encodeURIComponent(guest.nom_complet)}`;
+            const inviteLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodeURIComponent(guest.nom_complet)}`;
             document.getElementById('modal-invite-link').value = inviteLink;
             document.getElementById('modal-drinks').textContent = guest.boisson || 'Aucune préférence de boisson renseignée.';
             
@@ -771,7 +772,7 @@
         let currentShareLink = '';
         function openShareModal(encodedName) {
             const guestName = decodeURIComponent(encodedName);
-            currentShareLink = `https://ablyfiata.ideeal.site/?nom=${encodedName}`;
+            currentShareLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodedName}`;
             
             document.getElementById('share-modal-subtitle').textContent = `Invité(e) : ${guestName}`;
             
@@ -836,11 +837,16 @@
             if (genre === 'Couple') {
                 const nomCouple = nom2 ? `${nom1} & ${nom2}` : nom1;
                 recordsToInsert = [
-                    { nom_complet: nomCouple, genre: 'Couple', table_attribuee }
+                    { nom_complet: `M. R. ${nomCouple}`, genre: 'Monsieur', table_attribuee },
+                    { nom_complet: `M. M. E. ${nomCouple}`, genre: 'Madame', table_attribuee }
                 ];
-            } else {
+            } else if (genre === 'Monsieur') {
                 recordsToInsert = [
-                    { nom_complet: nom1, genre: genre, table_attribuee }
+                    { nom_complet: `Mr. ${nom1}`, genre: 'Monsieur', table_attribuee }
+                ];
+            } else if (genre === 'Madame') {
+                recordsToInsert = [
+                    { nom_complet: `Mme. ${nom1}`, genre: 'Madame', table_attribuee }
                 ];
             }
 
@@ -906,7 +912,7 @@
                 const { error } = await supabaseClient
                     .from('guest')
                     .delete()
-                    .eq('id', id);
+                    .eq('id', Number(id)); // Converti en nombre pour PostgreSQL serial
 
                 if (error) throw error;
                 await fetchGuests();
@@ -943,8 +949,11 @@
             try {
                 const { error } = await supabaseClient
                     .from('guest')
-                    .update({ nom_complet: nouveauNom, table_attribuee: nouvelleTable })
-                    .eq('id', editingGuestId);
+                    .update({ 
+                        nom_complet: nouveauNom, 
+                        table_attribuee: nouvelleTable 
+                    })
+                    .eq('id', Number(editingGuestId)); // Converti en nombre pour PostgreSQL serial
 
                 if (error) throw error;
 

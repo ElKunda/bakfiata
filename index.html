@@ -753,7 +753,8 @@
             document.getElementById('modal-guest-name').textContent = guest.nom_complet || 'Invité';
             document.getElementById('modal-table-name').innerHTML = `<i data-lucide="utensils" class="w-4 h-4 text-slate-500"></i> ${guest.table_attribuee || 'Table générale'}`;
             
-            const inviteLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodeURIComponent(guest.nom_complet)}`;
+            // Lien mis à jour vers ton vrai site d'invitation
+            const inviteLink = `https://ablyfiata.ideeal.site/?nom=${encodeURIComponent(guest.nom_complet)}`;
             document.getElementById('modal-invite-link').value = inviteLink;
             document.getElementById('modal-drinks').textContent = guest.boisson || 'Aucune préférence de boisson renseignée.';
             
@@ -772,7 +773,8 @@
         let currentShareLink = '';
         function openShareModal(encodedName) {
             const guestName = decodeURIComponent(encodedName);
-            currentShareLink = `https://hjqwcaqksgpdrdqntcmc.supabase.co/?nom=${encodedName}`;
+            // Lien mis à jour vers ton vrai site d'invitation
+            currentShareLink = `https://ablyfiata.ideeal.site/?nom=${encodedName}`;
             
             document.getElementById('share-modal-subtitle').textContent = `Invité(e) : ${guestName}`;
             
@@ -912,7 +914,7 @@
                 const { error } = await supabaseClient
                     .from('guest')
                     .delete()
-                    .eq('id', Number(id)); // Converti en nombre pour PostgreSQL serial
+                    .eq('id', Number(id));
 
                 if (error) throw error;
                 await fetchGuests();
@@ -953,7 +955,7 @@
                         nom_complet: nouveauNom, 
                         table_attribuee: nouvelleTable 
                     })
-                    .eq('id', Number(editingGuestId)); // Converti en nombre pour PostgreSQL serial
+                    .eq('id', Number(editingGuestId));
 
                 if (error) throw error;
 

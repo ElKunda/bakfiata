@@ -316,8 +316,7 @@
                 </div>
                 
                 <div id="container-nom-2" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nom complet du conjoint(e) *</label>
-                    <input type="text" id="new-nom-2" placeholder="Ex: Marie Dupont" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <!-- Champ masqué/inutilisé car on ne demande plus qu'un seul nom pour le couple -->
                 </div>
 
                 <div>
@@ -835,17 +834,10 @@
 
         function toggleCoupleFields() {
             const genre = document.getElementById('new-genre').value;
-            const containerNom2 = document.getElementById('container-nom-2');
             const labelNom1 = document.getElementById('label-nom-1');
-            const inputNom2 = document.getElementById('new-nom-2');
             if (genre === 'Couple') {
-                containerNom2.classList.remove('hidden');
-                inputNom2.required = true;
-                labelNom1.textContent = 'Nom complet (Personne 1) *';
+                labelNom1.textContent = 'Nom du couple *';
             } else {
-                containerNom2.classList.add('hidden');
-                inputNom2.required = false;
-                inputNom2.value = '';
                 labelNom1.textContent = 'Nom complet *';
             }
         }
@@ -858,15 +850,14 @@
             
             const genre = document.getElementById('new-genre').value;
             const nom1 = document.getElementById('new-nom-1').value.trim();
-            const nom2 = document.getElementById('new-nom-2').value.trim();
             const table_attribuee = document.getElementById('new-table').value;
             
             let recordsToInsert = [];
 
             if (genre === 'Couple') {
-                const nomCouple = nom2 ? `${nom1} & ${nom2}` : nom1;
                 recordsToInsert = [
-                    { nom_complet: nomCouple, genre: 'Couple', table_attribuee }
+                    { nom_complet: `${nom1} (Mr)`, genre: 'Couple', table_attribuee },
+                    { nom_complet: `${nom1} (Mme)`, genre: 'Couple', table_attribuee }
                 ];
             } else if (genre === 'Monsieur') {
                 recordsToInsert = [
